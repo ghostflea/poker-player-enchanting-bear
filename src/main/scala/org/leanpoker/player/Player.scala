@@ -5,25 +5,7 @@ import play.api.libs.json.Json._
 
 object Player {
 
-  val VERSION = "Default Scala folding player"
-
-  def betRequest(request: JsValue) = {
-    //request.getAsJsonObject.get
-    val currentBuyIn =  (request \ "current_buy_in").as[JsNumber].value.toInt
-    val inAction = (request \ "in_action").as[JsNumber].value.toInt
-    
-    val players = (request \ "players").as[JsArray]
-    val activePlayerBet = (players(inAction) \ "bet").as[JsNumber].value.toInt
-    
-    val callAmount = currentBuyIn - activePlayerBet
-    val minimumRaise = (request \ "minimum_raise").as[JsNumber].value.toInt
-    
-   callAmount
-  }
-
-  def showdown(game: JsValue) {
-
-  }
+  val VERSION = "Looking at cards player"
   
   case class Card(rank: Char, suit: String)
   
@@ -35,6 +17,37 @@ object Player {
   def findMultiples(ours: List[Card], common: List[Card]): Int = {
     val matches = ours.map { x => common.count { y => x.rank == y.rank } }
     matches.max
+  }
+
+  def betRequest(request: JsValue) = {
+    //request.getAsJsonObject.get
+    val currentBuyIn = (request \ "current_buy_in").as[JsNumber].value.toInt
+    val inAction = (request \ "in_action").as[JsNumber].value.toInt
+    
+    val players = (request \ "players").as[JsArray]
+    val activePlayerBet = (players(inAction) \ "bet").as[JsNumber].value.toInt
+    
+    val callAmount = currentBuyIn - activePlayerBet
+    val minimumRaise = (request \ "minimum_raise").as[JsNumber].value.toInt
+    
+    val stack = (players(inAction) \ "stack").as[JsNumber].value.toInt
+    
+    val commCards = convertCards((request \ "community_cards").as[JsArray])
+    val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
+    val bestCount = findMultiples(ourCards, commCards)
+    val cardRaise =
+      if (bestCount > 2) 1000
+      else if (bestCount == 2) 500
+      else if (bestCount == 1) 300
+      else 0
+    val wantToBet = callAmount + cardRaise
+    if (wantToBet <= stack) wantToBet
+    else if (callAmount <= stack) stack
+    else callAmount
+  }
+
+  def showdown(game: JsValue) {
+
   }
   
   def main(args: Array[String]): Unit = {
@@ -121,5 +134,7 @@ object Player {
     val ourCards = convertCards(holeCards)
     println(ourCards)
     println(findMultiples(ourCards, commCards))
+    val stack = (players(inAction) \ "stack").as[JsNumber].value.toInt
+    println(stack)
   }
 }

@@ -24,40 +24,102 @@ object Player {
   def showdown(game: JsValue) {
 
   }
+  
+  case class Card(rank: Char, suit: String)
+  
+  def convertCards(cards: JsArray): List[Card] = {
+    val conv = cards.as[List[Map[String, String]]]
+    conv.map { map => new Card(map("rank").charAt(0), map("suit")) }
+  }
+  
+  def findMultiples(ours: List[Card], common: List[Card]): Int = {
+    val matches = ours.map { x => common.count { y => x.rank == y.rank } }
+    matches.max
+  }
+  
   def main(args: Array[String]): Unit = {
-    val gameState = """{
-  "players":[
-    {
-      "name":"Player 1",
-      "stack":1000,
-      "status":"active",
-      "bet":0,
-      "hole_cards":[],
-      "version":"Version name 1",
-      "id":0
-    },
-    {
-      "name":"Player 2",
-      "stack":1000,
-      "status":"active",
-      "bet":0,
-      "hole_cards":[],
-      "version":"Version name 2",
-      "id":1
-    }
-  ],
-  "tournament_id":"550d1d68cd7bd10003000003",
-  "game_id":"550da1cb2d909006e90004b1",
-  "round":0,
-  "bet_index":0,
-  "small_blind":10,
-  "orbits":0,
-  "dealer":0,
-  "community_cards":[],
-  "current_buy_in":0,
-  "pot":0
+    val betReq = """{ "bet_index" : 4,
+  "big_blind" : 4,
+  "community_cards" : [ { "rank" : "K",
+        "suit" : "diamonds"
+      },
+      { "rank" : "K",
+        "suit" : "clubs"
+      },
+      { "rank" : "3",
+        "suit" : "clubs"
+      },
+      { "rank" : "A",
+        "suit" : "spades"
+      },
+      { "rank" : "2",
+        "suit" : "diamonds"
+      }
+    ],
+  "current_buy_in" : 4,
+  "dealer" : 4,
+  "game_id" : "57365c31f3376a0003000048",
+  "in_action" : 4,
+  "minimum_raise" : 4,
+  "orbits" : 1,
+  "players" : [ { "bet" : 2,
+        "id" : 0,
+        "name" : "CardCounter",
+        "stack" : 996,
+        "status" : "folded",
+        "version" : "Default Haskell folding player"
+      },
+      { "bet" : 0,
+        "id" : 1,
+        "name" : "AllOfTheParens",
+        "stack" : 0,
+        "status" : "out",
+        "version" : "Clojure-y pairs"
+      },
+      { "bet" : 4,
+        "id" : 2,
+        "name" : "HaskellRulz",
+        "stack" : 998,
+        "status" : "active",
+        "version" : "Default Haskell folding player"
+      },
+      { "bet" : 0,
+        "id" : 3,
+        "name" : "Elixir",
+        "stack" : 988,
+        "status" : "folded",
+        "version" : "0.0.1"
+      },
+      { "bet" : 4,
+        "hole_cards" : [ { "rank" : "6",
+              "suit" : "hearts"
+            },
+            { "rank" : "2",
+              "suit" : "hearts"
+            }
+          ],
+        "id" : 4,
+        "name" : "Enchanting Bear",
+        "stack" : 2008,
+        "status" : "active",
+        "version" : "Default Scala folding player"
+      }
+    ],
+  "pot" : 10,
+  "round" : 7,
+  "small_blind" : 2,
+  "tournament_id" : "572efe4efc0f49000300002b"
 }"""
-    val parsed = play.api.libs.json.Json.parse(gameState)
-    println(parsed)
+    val parsed = parse(betReq)
+    val communityCards = (parsed \ "community_cards").as[JsArray]
+    println(communityCards)
+    val commCards = convertCards(communityCards)
+    println(commCards)
+    val players = (parsed \ "players")
+    val inAction = (parsed \ "in_action").as[JsNumber].value.toInt
+    val holeCards = (players(inAction) \ "hole_cards").as[JsArray]
+    val ourCards = convertCards(holeCards)
+    println(ourCards)
+    println(findMultiples(ourCards, commCards))
   }
 }

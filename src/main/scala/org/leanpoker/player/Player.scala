@@ -17,6 +17,8 @@ object Player {
     
     val callAmount = currentBuyIn - activePlayerBet
     val minimumRaise = (request \ "minimum_raise").as[JsNumber].value.toInt
+   
+   println(request)
     
    callAmount
   }
@@ -24,6 +26,7 @@ object Player {
   def showdown(game: JsValue) {
 
   }
+  
   def main(args: Array[String]): Unit = {
     val gameState = """{
   "players":[

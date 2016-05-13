@@ -9,6 +9,16 @@ version = '1.0'
 
 repositories {
     mavenCentral()
+	jcenter()
+    maven {
+        name "typesafe-maven-release"
+        url "https://repo.typesafe.com/typesafe/maven-releases"
+    }
+    ivy {
+        name "typesafe-ivy-release"
+        url "https://repo.typesafe.com/typesafe/ivy-releases"
+        layout "ivy"
+    }
 }
 
 def final HTTP_PORT = System.getenv('PORT') ? System.getenv('PORT').toInteger() : 8080
@@ -41,7 +51,7 @@ buildscript {
 
 dependencies {
     testCompile 'org.scalatest:scalatest_2.11:2.2.0'
-    compile ('com.google.code.gson:gson:2.2.4','org.scala-lang:scala-library:2.11.0')
+    compile ('com.google.code.gson:gson:2.2.4','org.scala-lang:scala-library:2.11.0','com.typesafe.play:play-json_2.11:2.4.6')
     def tomcatVersion = '7.0.11'
 
     providedCompile "org.apache.tomcat:tomcat-servlet-api:${tomcatVersion}"

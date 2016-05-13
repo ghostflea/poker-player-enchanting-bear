@@ -19,10 +19,14 @@ class PlayerServlet extends HttpServlet {
         req.getParameter("action") match {
           case "bet_request" =>
             val gameState = req.getParameter("game_state")
-            resp.getWriter().print(Player.betRequest(new JsonParser().parse(gameState)))
+            val gameStateJson = play.api.libs.json.Json.parse(gameState)
+            
+            resp.getWriter().print(Player.betRequest(gameStateJson))
           case "showdown" =>
             val gameState = req.getParameter("game_state")
-            Player.showdown(new JsonParser().parse(gameState))
+            val gameStateJson = play.api.libs.json.Json.parse(gameState)
+            
+            Player.showdown(gameStateJson)
           case _ =>
             resp.getWriter().print(Player.VERSION)
         }

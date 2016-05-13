@@ -1,14 +1,19 @@
 package org.leanpoker.player
 
-import com.google.gson.JsonElement
+import play.api.libs.json.JsValue
 
 object Player {
 
   val VERSION = "Default Scala folding player"
 
-  def betRequest(request: JsonElement) = 100
+  def betRequest(request: JsValue) = {
+    //request.getAsJsonObject.get
+    
+    
+   100 
+  }
 
-  def showdown(game: JsonElement) {
+  def showdown(game: JsValue) {
 
   }
 }

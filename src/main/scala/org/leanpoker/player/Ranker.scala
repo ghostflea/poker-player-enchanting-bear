@@ -15,21 +15,43 @@ class Ranker {
     Rank(8) -> 0.000311
   )
   
+  
+  
   sealed trait BasicStartingHand
-  case object PairVs2Undercards extends BasicStartingHand
-  case object PairVsLowerPair extends BasicStartingHand
-  case object PairVs1Over1Under extends BasicStartingHand
-  case object TwoOverVs2Under extends BasicStartingHand
-  case object PairVs2Over extends BasicStartingHand
+  case object Pair extends BasicStartingHand
+  case object LowerPair extends BasicStartingHand
+  case object OneOver1Under extends BasicStartingHand
+  case object TwoOver extends BasicStartingHand
+  case object TwoUnder extends BasicStartingHand
+  
+  sealed trait BasicStartingComparison
+  case object PairVs2Undercards extends BasicStartingComparison
+  case object PairVsLowerPair extends BasicStartingComparison
+  case object PairVs1Over1Under extends BasicStartingComparison
+  case object TwoOverVs2Under extends BasicStartingComparison
+  case object PairVs2Over extends BasicStartingComparison
+  
   
   
   val headToHeadStartingProbabilities = Map(
-    
+    PairVs2Undercards -> 0.83,
+    PairVsLowerPair -> 0.82,
+    PairVs1Over1Under -> 0.71,
+    TwoOverVs2Under -> 0.63,
+    PairVs2Over -> 0.55
   )
   
   case class Hand(rank: Rank, firstValue: Int, secondValue: Int, kickers: List[Int])
   
+  def handToBasicStartingHand(hand: Hand): Option[BasicStartingHand] = {
+    hand.rank match {
+      case Rank(0) => None
+      case Rank(1) => None
+      case _ => None
+    }
+  }
+  
   def firstBetProbability(hand: Hand, numberOtherPlayers: Int): Double = {
-    0.0
+    1.0
   }
 }

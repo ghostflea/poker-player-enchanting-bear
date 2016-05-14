@@ -41,16 +41,23 @@ class Ranker {
     PairVs2Over -> 0.55
   )
   
-  case class Hand(rank: Rank, firstValue: Int, secondValue: Int, kickers: List[Int])
+  case class StartingHand(card1: Int, card2: Int)
   
+  case class Hand(rank: Rank, firstValue: Int, secondValue: Int, kickers: List[Int])
+  /*
   def handToBasicStartingHand(hand: Hand): Option[BasicStartingHand] = {
     hand.rank match {
-      case Rank(0) => None
+      case Rank(0) =>
+        hand.firstValue
       case Rank(1) => None
       case _ => None
     }
   }
   
+  def firstHeadToHead(hand: Hand): Double = {
+    
+  }
+*/  
   def firstBetProbability(hand: Hand, numberOtherPlayers: Int): Double = {
     1.0
   }

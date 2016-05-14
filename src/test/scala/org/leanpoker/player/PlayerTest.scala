@@ -6,9 +6,12 @@ import org.scalatest._
 
 class PlayerTest extends FunSpec with Matchers {
 
-  it("test bet request") {
-    val jsonElement = play.api.libs.json.Json.parse("{\"key1\": \"value1\", \"key2\": \"value2\"}")
-    Player.betRequest(jsonElement) should be (100)
+  it("check basic bet amounts") {
+    Player.computeBet(2, 100, 100, 1000) should be (100)
+  }
+
+  it("check fold") {
+    Player.computeBet(0, 0, 200, 1000) should be (0)
   }
 
   describe("betPosition") {

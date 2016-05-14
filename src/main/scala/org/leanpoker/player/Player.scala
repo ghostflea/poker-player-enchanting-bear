@@ -113,7 +113,7 @@ object Player {
   }
   
   def findMultiples(ours: List[Card], common: List[Card]): Int = {
-    if (ours.size > 1 && ours(0).rank == ours(0).rank) common.count { y => ours.head.rank == y.rank } + 1
+    if (ours.size > 1 && ours(0).rank == ours(1).rank) common.count { y => ours.head.rank == y.rank } + 1
     else ours.map { x => common.count { y => x.rank == y.rank } }.max
   }
   
@@ -131,7 +131,7 @@ object Player {
       val adjustedRaise =
         if (round < 2) raise
         else raise / round
-      val wantToBet = call + raise
+      val wantToBet = math.max(call, adjustedRaise)
       if (wantToBet <= stack) wantToBet
       else if (call <= stack) stack
       else call
@@ -155,7 +155,9 @@ object Player {
     val commCards = convertCards((request \ "community_cards").as[JsArray])
     val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
     val cardRaise = computeRaise(ourCards, commCards)
-    computeBet(commCards.length, cardRaise, callAmount, stack)
+    val bet = computeBet(commCards.length, cardRaise, callAmount, stack)
+    println(s"computeBet(${commCards.length}, ${cardRaise}, ${callAmount}, ${stack}) = $bet")
+    bet
   }
 
   def showdown(game: JsValue) {

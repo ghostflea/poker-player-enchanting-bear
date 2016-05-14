@@ -15,8 +15,8 @@ object Player {
   }
   
   def findMultiples(ours: List[Card], common: List[Card]): Int = {
-    val matches = ours.map { x => common.count { y => x.rank == y.rank } }
-    matches.max
+    if (ours.size > 1 && ours(0).rank == ours(0).rank) common.count { y => ours.head.rank == y.rank } + 1
+    else ours.map { x => common.count { y => x.rank == y.rank } }.max
   }
 
   def betRequest(request: JsValue) = {
@@ -36,9 +36,9 @@ object Player {
     val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
     val bestCount = findMultiples(ourCards, commCards)
     val cardRaise =
-      if (bestCount > 2) 1000
-      else if (bestCount == 2) 500
-      else if (bestCount == 1) 300
+      if (bestCount > 2) 200
+      else if (bestCount == 2) 100
+      else if (bestCount == 1) 60
       else 0
     val wantToBet = callAmount + cardRaise
     if (wantToBet <= stack) wantToBet
@@ -104,8 +104,8 @@ object Player {
         "version" : "0.0.1"
       },
       { "bet" : 4,
-        "hole_cards" : [ { "rank" : "6",
-              "suit" : "hearts"
+        "hole_cards" : [ { "rank" : "2",
+              "suit" : "spades"
             },
             { "rank" : "2",
               "suit" : "hearts"

@@ -25,7 +25,7 @@ object Player {
   }
   
   def findMultiples(ours: List[Card], common: List[Card]): Int = {
-    if (ours.size > 1 && ours(0).rank == ours(0).rank) common.count { y => ours.head.rank == y.rank } + 1
+    if (ours.size > 1 && ours(0).rank == ours(1).rank) common.count { y => ours.head.rank == y.rank } + 1
     else ours.map { x => common.count { y => x.rank == y.rank } }.max
   }
   

@@ -24,29 +24,51 @@ object Player {
     conv.map { map => new Card(convertRank(map("rank")), map("suit")) }
   }
   
-  def findMultiples(ours: List[Card], common: List[Card]): Int = {
-    if (ours.size > 1 && ours(0).rank == ours(1).rank) common.count { y => ours.head.rank == y.rank } + 1
-    else ours.map { x => common.count { y => x.rank == y.rank } }.max
+  /**
+   * Given out cards and common cards, returns best results combining our cards with common cards in the form of a
+   * pair. Each value in the pair is the number of cards in the set found, minus one - so 1 for a pair, 2 for
+   * three-of-a-kind, and 3 for four-of-a-kind. The highest value is always the first in the pair. A full house
+   * using cards in our hand for both sets would be (2, 1).
+   */
+  def findMultiples(ours: List[Card], common: List[Card]): (Int, Int) = {
+    if (ours.size > 1 && ours(0).rank == ours(1).rank) {
+      val count = common.count { y => ours.head.rank == y.rank } + 1
+      (count, 0)
+    } else {
+      val counts = ours.map { x => common.count { y => x.rank == y.rank } }.sorted
+      (counts(1), counts(0))
+    }
   }
   
-  def computeRaise(hole: List[Card], comm: List[Card]): Int = {
-    val bestCount = findMultiples(hole, comm)
-    if (bestCount > 2) 200
-    else if (bestCount == 2) 100
-    else if (bestCount == 1) 60
-    else 0
-  }
-  
-  def computeBet(round: Int, raise: Int, call: Int, stack: Int): Int = {
-    if (raise == 0 && (round < 2 || round > 3) && call > stack / 8) 0
-    else {
-      val adjustedRaise =
-        if (round < 2) raise
-        else raise / round
-      val wantToBet = math.max(call, adjustedRaise)
-      if (wantToBet <= stack) wantToBet
-      else if (call <= stack) stack
-      else call
+  def computeBet(call: Int, pot: Int, stack: Int, hole: List[Card], comm: List[Card]): Int = {
+    val (mult1, mult2) = findMultiples(hole, comm)
+    val rank = comm.size match {
+      case 0 => if (mult1 > 0) 30 else 0
+      case 3 | 4 =>
+        (mult1, mult2) match {
+          case (1, 0) => 10
+          case (1, 1) => 50
+          case (2, 0) => 100
+          case (2, 1) => 200
+          case (3, 0) => 1000
+          case _ => 0
+        }
+      case _ =>
+        (mult1, mult2) match {
+          case (1, 0) => 0
+          case (1, 1) => 25
+          case (2, 0) => 50
+          case (2, 1) => 100
+          case (3, 0) => 500
+          case _ => 0
+        }
+    }
+    val highStakes = call > 6 && call > stack / 4
+    if (rank == 0) {
+      if (highStakes) 0 else call
+    } else {
+      if (call > rank) 0
+      else math.min(math.max(call, pot / 2), rank)
     }
   }
 
@@ -63,12 +85,12 @@ object Player {
     val minimumRaise = (request \ "minimum_raise").as[JsNumber].value.toInt
     
     val stack = (players(inAction) \ "stack").as[JsNumber].value.toInt
+    val pot = (request \ "pot").as[JsNumber].value.toInt
     
     val commCards = convertCards((request \ "community_cards").as[JsArray])
     val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
-    val cardRaise = computeRaise(ourCards, commCards)
-    val bet = computeBet(commCards.length, cardRaise, callAmount, stack)
-    println(s"computeBet(${commCards.length}, ${cardRaise}, ${callAmount}, ${stack}) = $bet")
+    val bet = computeBet(callAmount, pot, stack, ourCards, commCards)
+    println(s"computeBet($callAmount, $stack, $ourCards, $commCards) = $bet")
     bet
   }
 

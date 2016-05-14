@@ -40,7 +40,7 @@ object Player {
       else if (bestCount == 2) 100
       else if (bestCount == 1) 60
       else 0
-    if (cardRaise == 0 && commCards.length > 3 && callAmount > stack / 8) 0
+    if (cardRaise == 0 && (commCards.length < 2 || commCards.length > 3) && callAmount > stack / 8) 0
     else {
       val wantToBet = callAmount + cardRaise
       if (wantToBet <= stack) wantToBet

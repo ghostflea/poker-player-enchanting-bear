@@ -28,9 +28,9 @@ class PlayerTest extends FunSpec with Matchers {
   }
   
   it("check bet amounts") {
-    Player.computeBet(4, 8, 1000, hold1, flop1) should be (4)
-    Player.computeBet(1000, 1000, 1000, hold1, flop1) should be (0)
-    Player.computeBet(1000, 1000, 1000, hold2, flop1) should be (1000)
+    Player.computeBet(4, 4, 4, 8, 100, 1000, hold1, flop1) should be (4)
+    Player.computeBet(1000, 4, 4, 100, 1000, 1000, hold1, flop1) should be (0)
+    Player.computeBet(1000, 4, 4, 100, 1000, 1000, hold2, flop1) should be (1000)
   }
 
   describe("betPosition") {

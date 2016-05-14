@@ -127,13 +127,13 @@ object Player {
       Late
   }
   
-  def computeBet(call: Int, pot: Int, stack: Int, hole: List[Card], comm: List[Card]): Int = {
+  def computeBet(call: Int, bigBlind: Int, minRaise: Int, inFor: Int, pot: Int, stack: Int, hole: List[Card], comm: List[Card]): Int = {
     val (mult1, mult2) = findMultiples(hole, comm)
     val rank = comm.size match {
-      case 0 => if (mult1 > 0) 30 else 0
+      case 0 => if (mult1 > 0) 100 else 0
       case 3 | 4 =>
         (mult1, mult2) match {
-          case (1, 0) => 10
+          case (1, 0) => 20
           case (1, 1) => 50
           case (2, 0) => 100
           case (2, 1) => 200
@@ -151,11 +151,14 @@ object Player {
         }
     }
     if (rank == 0) {
-    	val highStakes = call > 6 && call > stack / 10
-      if (highStakes || comm.size > 0) 0 else call
+      if (call < stack / 20 && comm.size < 2) call
+      else 0
     } else {
-      if (comm.size != 0 && call > rank * 4) 0
-      else math.max(math.max(call, pot / 2), rank)
+      val baseBet = (pot / 1000 + 1) * rank
+      val threshold = math.max(baseBet * 4, pot / 8)
+      val atRisk = math.min(call, stack)
+      if (comm.size > 1 && atRisk > threshold) 0
+      else math.max(math.max(call, pot / 2), baseBet)
     }
   }
 
@@ -173,10 +176,12 @@ object Player {
     
     val stack = (players(inAction) \ "stack").as[JsNumber].value.toInt
     val pot = (request \ "pot").as[JsNumber].value.toInt
+    val bigBlind = (request \ "big_blind").as[JsNumber].value.toInt
+    val minRaise = (request \ "minimum_raise").as[JsNumber].value.toInt
     
     val commCards = convertCards((request \ "community_cards").as[JsArray])
     val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
-    val bet = computeBet(callAmount, pot, stack, ourCards, commCards)
+    val bet = computeBet(callAmount, bigBlind, minRaise, activePlayerBet, pot, stack, ourCards, commCards)
     println(s"computeBet($callAmount, $stack, $ourCards, $commCards) = $bet")
     bet
   }

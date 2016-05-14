@@ -42,6 +42,7 @@ object Player {
 
   def betRequest(request: JsValue) = {
     //request.getAsJsonObject.get
+    println(request)
     val currentBuyIn = (request \ "current_buy_in").as[JsNumber].value.toInt
     val inAction = (request \ "in_action").as[JsNumber].value.toInt
     

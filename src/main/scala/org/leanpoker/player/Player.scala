@@ -24,6 +24,94 @@ object Player {
     conv.map { map => new Card(convertRank(map("rank")), map("suit")) }
   }
   
+
+  val earlyHands = List(
+    List(Card(14, ""), Card(14, "")),
+    List(Card(13, ""), Card(13, "")),
+    List(Card(12, ""), Card(12, "")),
+    List(Card(11, ""), Card(11, ""))
+  )
+  
+  val earlyHandsSuited = List(
+    List(Card(14, "S"), Card(13, "S")),
+    List(Card(14, "S"), Card(12, "S"))
+  )
+  
+  val midHands = List(
+    List(Card(14, ""), Card(12, "")),
+    List(Card(10, ""), Card(10, "")),
+    List(Card(9, ""), Card(9, ""))
+  )
+  
+  val midHandsSuited = List(
+    List(Card(14, "S"), Card(11, "S")),
+    List(Card(13, "S"), Card(12, "S"))
+  )
+  
+  val lateHands = List(
+    List(Card(14, "S"), Card(10, "S")),
+    List(Card(14, ""), Card(11, "")),
+    List(Card(8, ""), Card(8, ""))
+  )
+  
+  val lateHandsSuited = List(
+    List(Card(14, "S"), Card(10, "S")),
+    List(Card(13, "S"), Card(11, "S"))
+  )
+  
+  sealed trait BetPosition
+  case object Early extends BetPosition
+  case object Mid extends BetPosition
+  case object Late extends BetPosition
+  
+  def inPositionPlay(position: BetPosition, card1: Card, card2: Card): Boolean = {
+     position match {
+      case Early => inPositionPlaySub(earlyHands, earlyHandsSuited)(card1, card2)
+      case Mid => inPositionPlaySub(midHands, midHandsSuited)(card1, card2)
+      case Late => inPositionPlaySub(lateHands, lateHandsSuited)(card1, card2)
+    }
+  }
+  
+  def inPositionPlaySub(nonSuited: List[List[Card]], suited: List[List[Card]])(card1: Card, card2: Card): Boolean = {
+    val handSuited = card1.suit == card2.suit
+    
+    def inHands(hands: List[List[Card]]) =
+      hands.exists(pair => pair.filter(p => p.rank == card1.rank).filter(s => s.rank == card2.rank).length == 0)
+    
+    inHands(nonSuited) || (handSuited && inHands(suited))
+  }
+  
+  def computeFirstRaise(hole: (Card, Card), ourBet: Integer, pot: Integer, position: BetPosition): Int = {
+    val goodHand = inPositionPlay(position, hole._1, hole._2)
+    
+    if (goodHand) 100
+    else 0
+  }
+  
+  def getBetPosition(dealer: Int, playerCount: Int, ourIndex: Int): BetPosition = {
+    //(dealer+1)%(players.length)
+    
+    val firstPlayer = (dealer+1) % playerCount
+    val ourPosition = 
+      if (ourIndex < firstPlayer)
+        (ourIndex - firstPlayer) + playerCount
+      else
+        ourIndex - firstPlayer
+        
+    val segment = playerCount.toDouble / 3.0
+    
+    val early = Math.floor(segment)
+    val mid = early + Math.ceil(segment)
+    val late = mid + Math.ceil(segment)
+    
+    if (ourPosition < early)
+      Early
+    else if (ourPosition < mid)
+      Mid
+    else
+      Late
+  }
+  
   def findMultiples(ours: List[Card], common: List[Card]): Int = {
     if (ours.size > 1 && ours(0).rank == ours(0).rank) common.count { y => ours.head.rank == y.rank } + 1
     else ours.map { x => common.count { y => x.rank == y.rank } }.max

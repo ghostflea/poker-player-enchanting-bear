@@ -2,16 +2,26 @@ package org.leanpoker.player
 
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import scala.util.Success
+import scala.util.Try
 
 object Player {
 
   val VERSION = "Looking at cards player"
   
-  case class Card(rank: Char, suit: String)
+  case class Card(rank: Int, suit: String)
+  
+  def convertRank(rank: String) = rank match {
+    case "J" => 11
+    case "Q" => 12
+    case "K" => 13
+    case "A" => 14
+    case other => other.toInt
+  }
   
   def convertCards(cards: JsArray): List[Card] = {
     val conv = cards.as[List[Map[String, String]]]
-    conv.map { map => new Card(map("rank").charAt(0), map("suit")) }
+    conv.map { map => new Card(convertRank(map("rank")), map("suit")) }
   }
   
   def findMultiples(ours: List[Card], common: List[Card]): Int = {

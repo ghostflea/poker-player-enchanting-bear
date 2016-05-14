@@ -43,7 +43,7 @@ object Player {
       val adjustedRaise =
         if (round < 2) raise
         else raise / round
-      val wantToBet = call + raise
+      val wantToBet = math.max(call, adjustedRaise)
       if (wantToBet <= stack) wantToBet
       else if (call <= stack) stack
       else call

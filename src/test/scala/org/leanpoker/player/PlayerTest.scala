@@ -5,9 +5,12 @@ import org.scalatest.{FunSpec, MustMatchers}
 
 class PlayerTest extends FunSpec with MustMatchers {
 
-  it("test bet request") {
-    val jsonElement = play.api.libs.json.Json.parse("{\"key1\": \"value1\", \"key2\": \"value2\"}")
-    Player.betRequest(jsonElement) must be (100)
+  it("check basic bet amounts") {
+    Player.computeBet(2, 100, 100, 1000) must be (100)
+  }
+
+  it("check fold") {
+    Player.computeBet(0, 0, 200, 1000) must be (0)
   }
 
 }

@@ -18,6 +18,27 @@ object Player {
     if (ours.size > 1 && ours(0).rank == ours(0).rank) common.count { y => ours.head.rank == y.rank } + 1
     else ours.map { x => common.count { y => x.rank == y.rank } }.max
   }
+  
+  def computeRaise(hole: List[Card], comm: List[Card]): Int = {
+    val bestCount = findMultiples(hole, comm)
+    if (bestCount > 2) 200
+    else if (bestCount == 2) 100
+    else if (bestCount == 1) 60
+    else 0
+  }
+  
+  def computeBet(round: Int, raise: Int, call: Int, stack: Int): Int = {
+    if (raise == 0 && (round < 2 || round > 3) && call > stack / 8) 0
+    else {
+      val adjustedRaise =
+        if (round < 2) raise
+        else raise / round
+      val wantToBet = call + raise
+      if (wantToBet <= stack) wantToBet
+      else if (call <= stack) stack
+      else call
+    }
+  }
 
   def betRequest(request: JsValue) = {
     //request.getAsJsonObject.get
@@ -34,19 +55,8 @@ object Player {
     
     val commCards = convertCards((request \ "community_cards").as[JsArray])
     val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
-    val bestCount = findMultiples(ourCards, commCards)
-    val cardRaise =
-      if (bestCount > 2) 200
-      else if (bestCount == 2) 100
-      else if (bestCount == 1) 60
-      else 0
-    if (cardRaise == 0 && (commCards.length < 2 || commCards.length > 3) && callAmount > stack / 8) 0
-    else {
-      val wantToBet = callAmount + cardRaise
-      if (wantToBet <= stack) wantToBet
-      else if (callAmount <= stack) stack
-      else callAmount
-    }
+    val cardRaise = computeRaise(ourCards, commCards)
+    computeBet(commCards.length, cardRaise, callAmount, stack)
   }
 
   def showdown(game: JsValue) {

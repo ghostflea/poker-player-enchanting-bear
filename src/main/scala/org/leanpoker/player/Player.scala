@@ -57,7 +57,9 @@ object Player {
     val commCards = convertCards((request \ "community_cards").as[JsArray])
     val ourCards = convertCards((players(inAction) \ "hole_cards").as[JsArray])
     val cardRaise = computeRaise(ourCards, commCards)
-    computeBet(commCards.length, cardRaise, callAmount, stack)
+    val bet = computeBet(commCards.length, cardRaise, callAmount, stack)
+    println(s"computeBet(${commCards.length}, ${cardRaise}, ${callAmount}, ${stack}) = $bet")
+    bet
   }
 
   def showdown(game: JsValue) {
